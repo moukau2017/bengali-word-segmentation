@@ -6,11 +6,144 @@ Word segmentation is a crucial phase for handwritten text recognition (HTR). Whe
 
 # ✨ Key Features
 
-- Swin Transformer based feature extraction
-- Mask R-CNN based word instance segmentation
-- Handles dense handwritten answer scripts
-- Supports Bengali handwritten word segmentation
-- COCO-format evaluation
-- Precision, Recall, and F1-score reporting
+- Handwritten word segmentation using Swin Transformer and Mask R-CNN
+- Designed for Bengali handwritten school answer-book images containing dense and irregular handwriting
+- Handles challenging scenarios such as varying handwriting styles, irregular spacing, touching words, superscripts, subscripts, and noise artifacts
+- Trained and evaluated on a manually annotated dataset collected from multiple Bengali-medium schools
+- Demonstrates superior performance
+- Evaluated using standard COCO metrics (AP50 and AP75) along with word-level Precision, Recall, and F1-score
 - Visualization of segmentation outputs
-- Reproducible evaluation pipeline
+- Provides reproducible evaluation and visualization pipelines for independent verification
+- Provided trained model, test set and corresoponding annotation for model performance varification
+- Supports COCO-format annotations
+
+  # 🚀 Quick Start
+
+## Prerequisites
+
+- Python 3.10+
+- CUDA-capable GPU (recommended)
+- PyTorch
+- Detectron2
+
+
+
+
+
+
+# 📁 Project Structure
+
+```text
+bengali-word-segmentation/
+│
+├── models/
+│   └── final_model.pth
+│
+├── sample_data/
+│   ├── images/
+│   └── annotations/
+│       └── val_annotations.json
+│
+├── scripts/
+│   ├── evaluate.py
+│   ├── inference_visualize.py
+│   └── via_to_coco_converter.py
+│
+├── notebooks/
+│   └── evaluation_notebook.ipynb
+│
+├── outputs/
+│   └── predictions/
+│
+├── requirements.txt
+└── README.md
+
+
+# 📊 Evaluation
+
+The evaluation script reports:
+
+## Bounding Box Metrics
+
+- AP50
+- AP75
+
+## Segmentation Metrics
+
+- AP50
+- AP75
+
+## Word Detection Metrics
+
+- Precision
+- Recall
+- F1-score
+
+Run evaluation:
+```bash
+python scripts/evaluate.py
+```
+
+---
+# 🖼 Inference & Visualization
+
+Generate segmentation visualizations:
+
+```bash
+python scripts/inference_visualize.py
+```
+
+Predicted images are saved in:
+
+```text
+outputs/predictions/
+```
+
+---
+
+# 📂 Dataset
+
+The model is evaluated on handwritten Bengali answer-book images.
+
+### Validation Dataset
+
+- Images: 30
+- Annotation format: COCO JSON
+- Task: Word-level instance segmentation
+
+Dataset structure:
+
+```text
+sample_data/
+├── images/
+└── annotations/
+    └── val_annotations.json
+```
+# 🔬 Reproducibility
+
+The repository provides:
+
+- Trained model weights
+- Evaluation scripts
+- Sample validation dataset
+- Visualization utilities
+
+---
+
+# 📜 License
+
+This repository is released under the MIT License.
+
+
+# 🙏 Acknowledgments
+
+- Detectron2
+- Swin Transformer
+- COCO API
+
+---
+
+
+
+
+
