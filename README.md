@@ -17,6 +17,18 @@ Word segmentation is a crucial phase for handwritten text recognition (HTR). Whe
 - Provided trained model, test set and corresoponding annotation for model performance varification
 - Supports COCO-format annotations
 
+
+---
+
+# 📄 Citation & Resources
+
+### Repository
+
+https://github.com/moukau2017/bengali-word-segmentation
+
+---
+
+
   # 🚀 Quick Start
 
 ## Prerequisites
@@ -26,10 +38,28 @@ Word segmentation is a crucial phase for handwritten text recognition (HTR). Whe
 - PyTorch
 - Detectron2
 
+## Installation
 
+Clone repository
 
+```bash
+git clone https://github.com/moukau2017/bengali-word-segmentation.git
+cd bengali-word-segmentation
+```
 
+Install dependencies
 
+```bash
+pip install -r requirements.txt
+```
+
+Install Detectron2
+
+```bash
+pip install git+https://github.com/facebookresearch/detectron2.git
+```
+
+---
 
 # 📁 Project Structure
 
