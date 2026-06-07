@@ -228,11 +228,6 @@ def main():
         "SOLVER.IMS_PER_BATCH", "2",
         "SOLVER.BASE_LR", "0.0001",
         "SOLVER.MAX_ITER", "5000",
-
-        # FIX: LR decay steps must be within MAX_ITER (5000).
-        # Using ~60% and ~80% of total iterations as standard convention.
-        # Original values (12000, 14000) were beyond MAX_ITER and would
-        # have caused the LR schedule to never trigger during training.
         "SOLVER.STEPS", "(3000, 4000)",
         "SOLVER.GAMMA", "0.1",
 
