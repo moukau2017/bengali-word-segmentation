@@ -117,11 +117,11 @@ COCO annotation file (val_annotations.json)
 
 The repository provides:
 
-Trained model weights
-Validation dataset
-COCO annotations
-Evaluation script
-Inference visualization script
+- Trained model weights
+- Validation dataset
+- COCO annotations
+- Evaluation script
+- Inference visualization script
 
 allowing independent verification of the model.
 
