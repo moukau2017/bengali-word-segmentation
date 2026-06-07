@@ -150,14 +150,7 @@ Download:
 - Annotation format: COCO JSON
 - Task: Word-level instance segmentation
 
-Dataset structure:
 
-```text
-sample_data/
-├── images/
-└── annotations/
-    └── val_annotations.json
-```
 # 🔬 Reproducibility
 
 The repository provides:
