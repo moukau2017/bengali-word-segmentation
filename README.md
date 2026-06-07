@@ -88,6 +88,15 @@ bengali-word-segmentation/
 ├── requirements.txt
 └── README.md
 
+## Pretrained Model
+
+Download the trained model from:
+
+(https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing)
+
+Use the model in inference.py 
+Test on validation images with annotation
+
 
 # 📊 Evaluation
 
