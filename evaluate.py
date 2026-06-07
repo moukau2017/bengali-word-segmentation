@@ -52,7 +52,7 @@ def parse_args():
 
     parser.add_argument(
         "--model",
-        default="models/final_model.pth",
+        default="validation_images",
         help="Path to trained model weights"
     )
 
@@ -64,7 +64,7 @@ def parse_args():
 
     parser.add_argument(
         "--annotations",
-        default="sample_data/annotations/val_annotations.json",
+        default="val_annotations.json",
         help="Path to COCO validation annotation file"
     )
 
