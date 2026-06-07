@@ -142,6 +142,10 @@ The model is evaluated on handwritten Bengali answer-book images.
 
 ### Validation Dataset
 
+Download:
+<[validation dataset drive link](https://drive.google.com/drive/folders/1yCpxaiwM3vrg5Tl-Ks6tuR0dRnHwxJVM?usp=sharing)>
+
+
 - Images: 30
 - Annotation format: COCO JSON
 - Task: Word-level instance segmentation
