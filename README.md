@@ -113,17 +113,19 @@ python scripts/evaluate.py
 
 ## Pretrained Model
 
-Download the trained model from:
+The trained model weights can be downloaded from Google Drive:
 
-(https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing)
+[Download final_model.pth](https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing)
+Note: The model file is hosted externally due to GitHub file-size limitations.
+After downloading, place the file here:
 
-Use the model in inference.py 
-Test on validation images with annotation
+```text
+models/final_model.pth
 
-Generate segmentation visualizations:
+Then run
 
 ```bash
-python scripts/inference_visualize.py
+python scripts/evaluate.py
 ```
 
 Predicted images are saved in:
