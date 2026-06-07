@@ -60,13 +60,10 @@ bengali-word-segmentation/
 # 📊 Evaluation
 
 The evaluation script reports:
-# Bounding Box Metrics
+-- Bounding Box/Segmentation Metrics
 - AP50
 - AP75
-# Segmentation Metrics
-- AP50
-- AP75
-# Word Detection Metrics
+-- Word Detection Metrics
 - Precision
 - Recall
 - F1-score
