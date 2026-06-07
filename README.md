@@ -14,7 +14,7 @@
 - Provided the training pipeline and code for reproducibility and further research
 ---
 
-# 📄 Citation & Resources
+## Citation & Resources
 
 ### Repository
 
@@ -23,9 +23,9 @@ https://github.com/moukau2017/bengali-word-segmentation
 ---
 
 
-  # 🚀 Quick Start
+  ## 🚀 Quick Start
 
-## Prerequisites
+### Prerequisites
 
 - Python 3.10+
 - CUDA-capable GPU (recommended)
@@ -33,7 +33,7 @@ https://github.com/moukau2017/bengali-word-segmentation
 - Detectron2
 
 
-# 📁 Project Structure
+## 📁 Project Structure
 
 bengali-word-segmentation/
 │
