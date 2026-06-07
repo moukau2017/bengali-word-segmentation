@@ -6,15 +6,13 @@ Word segmentation is a crucial phase for handwritten text recognition (HTR). Whe
 
 # ✨ Key Features
 
-- Handwritten word segmentation using Swin Transformer and Mask R-CNN.
-- Designed for Bengali handwritten images.
+- Handwritten word segmentation for Bengali handwritten images, using Swin Transformer and Mask R-CNN.
 - Handles challenging scenarios such as varying handwriting styles, irregular spacing, touching words, superscripts, subscripts, and noise artifacts.
 - Trained and evaluated on a manually annotated dataset collected from multiple Bengali-medium schools.
-- Demonstrates superior performance.
 - Evaluated using standard COCO metrics (AP50 and AP75) along with word-level Precision, Recall, and F1-score.
-- Visualization of segmentation outputs.
-- Provides reproducible evaluation and visualization pipelines for independent verification.
-- The trained model, test set, and corresponding annotations are provided for model performance verification.
+- Visualization of input and segmentation outputs.
+- Trained model, test set, and corresponding annotations are provided with evaluation and visualization pipelines for verification
+- Provided the training pipeline and code for reproducibility and further research
 ---
 
 # 📄 Citation & Resources
