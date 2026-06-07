@@ -4,9 +4,7 @@ train.py
 Training script for Bengali handwritten word segmentation using
 Swin Transformer (Swin-S) + Mask R-CNN.
 
-This script is a cleaned, repository-ready version of the original training
-notebook. It removes Colab/Google Drive specific paths and uses command-line
-arguments instead.
+This script is the original training notebook. 
 
 Expected dataset format:
 - Images folder
