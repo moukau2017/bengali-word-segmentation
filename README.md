@@ -60,16 +60,15 @@ bengali-word-segmentation/
 # 📊 Evaluation
 
 The evaluation script reports:
-Bounding Box/Segmentation Metrics
+bounding Box, segmentation and Word Detection Metrics
 ---
 - AP50
 - AP75
--- Word Detection Metrics
 - Precision
 - Recall
 - F1-score
+  
 Run evaluation:
-
 python evaluate.py \
     --model models/final_model.pth \
     --images /path/to/validation_images \
