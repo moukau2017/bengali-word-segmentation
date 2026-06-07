@@ -128,6 +128,14 @@ Inference visualization script
 
 allowing independent verification of the model.
 ---
+## Training
+
+The training script used in this study is provided for transparency and reproducibility.
+
+The original training dataset is not publicly distributed because it consists of handwritten student answer-book images collected from multiple Bengali-medium schools.
+
+Researchers may use their own dataset following the same COCO annotation format. Annotated images from VGG image annotator.
+
 
 # 📜 License
 
