@@ -217,7 +217,7 @@ def main():
         # Optimizer and schedule
         "SOLVER.IMS_PER_BATCH", "2",
         "SOLVER.BASE_LR", "0.0001",
-        "SOLVER.MAX_ITER", "15000",
+        "SOLVER.MAX_ITER", "5000",
         "SOLVER.STEPS", "(12000, 14000)",
         "SOLVER.GAMMA", "0.1",
 
