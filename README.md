@@ -54,11 +54,11 @@ bengali-word-segmentation/
 
 
 
-# 📊 Evaluation
+# 🖼 Inference & Visualization
 
-The evaluation script reports:
+## The evaluation script reports:
 bounding Box, segmentation and Word Detection Metrics
----
+
 - AP50
 - AP75
 - Precision
@@ -72,7 +72,7 @@ python evaluate.py \
     --annotations /path/to/val_annotations.json
 
 
-# 🖼 Inference & Visualization
+
 Generate segmentation visualizations:
 
 python inference_visualize.py \
