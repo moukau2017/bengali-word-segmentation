@@ -98,7 +98,7 @@ models/final_model.pth
 
 
 
-# 📂 Validation Dataset
+## Validation Dataset
 
 The validation images and COCO annotation file can be downloaded from:
 
