@@ -38,55 +38,22 @@ https://github.com/moukau2017/bengali-word-segmentation
 - PyTorch
 - Detectron2
 
-## Installation
-
-Clone repository
-
-```bash
-git clone https://github.com/moukau2017/bengali-word-segmentation.git
-cd bengali-word-segmentation
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Install Detectron2
-
-```bash
-pip install git+https://github.com/facebookresearch/detectron2.git
-```
-
----
 
 # 📁 Project Structure
 
-```text
 bengali-word-segmentation/
 │
 ├── models/
-│   └── final_model.pth
-│
-├── sample_data/
-│   ├── images/
-│   └── annotations/
-│       └── val_annotations.json
-│
-├── scripts/
-│   ├── evaluate.py
-│   ├── inference_visualize.py
-│   └── via_to_coco_converter.py
-│
-├── notebooks/
-│   └── evaluation_notebook.ipynb
+│   └── .gitkeep
 │
 ├── outputs/
-│   └── predictions/
+│   └── example_predictions/
 │
+├── evaluate.py
+├── inference_visualize.py
 ├── requirements.txt
-└── README.md
+├── README.md
+└── LICENSE
 
 
 
@@ -104,62 +71,62 @@ The evaluation script reports:
 - Recall
 - F1-score
 Run evaluation:
-```bash
-python scripts/evaluate.py
-```
 
----
+python evaluate.py \
+    --model models/final_model.pth \
+    --images /path/to/validation_images \
+    --annotations /path/to/val_annotations.json
+
+
 # 🖼 Inference & Visualization
+Generate segmentation visualizations:
+
+python inference_visualize.py \
+    --model models/final_model.pth \
+    --images /path/to/validation_images
+
+Prediction visualizations will be saved in:
+outputs/
+
 
 ## Pretrained Model
 
 The trained model weights can be downloaded from Google Drive:
 
-[Download final_model.pth](https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing)
-Note: The model file is hosted externally due to GitHub file-size limitations.
-After downloading, place the file here:
+Download Model
 
-```text
+https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing
+
+Note: The model file is hosted externally due to GitHub file-size limitations.
+
+After downloading, place the model in:
 models/final_model.pth
 
-Then run
-
-```bash
-python scripts/evaluate.py
-```
-
-Predicted images are saved in:
-
-```text
-outputs/predictions/
-```
-
----
-
-# 📂 Dataset
-
-The model is evaluated on handwritten Bengali answer-book images.
-
-### Validation Dataset
-
-Download:
-<[validation dataset drive link](https://drive.google.com/drive/folders/1yCpxaiwM3vrg5Tl-Ks6tuR0dRnHwxJVM?usp=sharing)>
 
 
-- Images: 30
-- Annotation format: COCO JSON
-- Task: Word-level instance segmentation
+# 📂 Validation Dataset
 
+The validation images and COCO annotation file can be downloaded from:
+
+Download Validation Dataset
+
+https://drive.google.com/drive/folders/1yCpxaiwM3vrg5Tl-Ks6tuR0dRnHwxJVM?usp=sharing
+
+Contents:
+Validation images (30 images)
+COCO annotation file (val_annotations.json)
 
 # 🔬 Reproducibility
 
 The repository provides:
 
-- Trained model weights
-- Evaluation scripts
-- Sample validation dataset
-- Visualization utilities
+Trained model weights
+Validation dataset
+COCO annotations
+Evaluation script
+Inference visualization script
 
+allowing independent verification of the model.
 ---
 
 # 📜 License
