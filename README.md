@@ -88,6 +88,29 @@ bengali-word-segmentation/
 ├── requirements.txt
 └── README.md
 
+
+
+# 📊 Evaluation
+
+The evaluation script reports:
+## Bounding Box Metrics
+- AP50
+- AP75
+## Segmentation Metrics
+- AP50
+- AP75
+## Word Detection Metrics
+- Precision
+- Recall
+- F1-score
+Run evaluation:
+```bash
+python scripts/evaluate.py
+```
+
+---
+# 🖼 Inference & Visualization
+
 ## Pretrained Model
 
 Download the trained model from:
@@ -96,35 +119,6 @@ Download the trained model from:
 
 Use the model in inference.py 
 Test on validation images with annotation
-
-
-# 📊 Evaluation
-
-The evaluation script reports:
-
-## Bounding Box Metrics
-
-- AP50
-- AP75
-
-## Segmentation Metrics
-
-- AP50
-- AP75
-
-## Word Detection Metrics
-
-- Precision
-- Recall
-- F1-score
-
-Run evaluation:
-```bash
-python scripts/evaluate.py
-```
-
----
-# 🖼 Inference & Visualization
 
 Generate segmentation visualizations:
 
