@@ -3,7 +3,7 @@
 
 
 
-# Key Features
+### Key Features
 
 - Handwritten word segmentation for Bengali handwritten images, using Swin Transformer and Mask R-CNN.
 - Handles challenging scenarios such as varying handwriting styles, irregular spacing, touching words, superscripts, subscripts, and noise artifacts.
