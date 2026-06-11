@@ -1,6 +1,6 @@
 """
 
-Download the trained model from link in READme file. Run the trained word segmentation model on sample images (provided in Sample_input folder)
+Download the trained model from link shared in READme file. Run the trained word segmentation model on sample images (provided in Sample_input folder)
 
 then save visualized predictions to an output folder.
 
