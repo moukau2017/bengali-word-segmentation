@@ -31,8 +31,7 @@ https://github.com/moukau2017/bengali-word-segmentation
 - CUDA-capable GPU (recommended)
 - PyTorch
 - Detectron2
-- Detectron2 — install following the official instructions for your CUDA version
-
+  
 ### Clone SwinT_detectron2
 git clone https://github.com/xiaohu2015/SwinT_detectron2.git
 
