@@ -1,257 +1,325 @@
 """
 evaluate.py
 
-Reviewer-friendly evaluation script for Bengali handwritten word segmentation
-using Swin Transformer (Swin-S) + Mask R-CNN.
+Evaluate a trained Swin-S + Mask R-CNN model on the validation set and the
+test set for Bengali handwritten word segmentation.
 
-This script reports:
-  - Bounding Box AP50 / AP75
-  - Segmentation Mask AP50 / AP75
-  - Word-level Precision / Recall / F1-score at IoU >= 0.50
+Reports per-set:
+  - COCO bbox  AP50, AP75
+  - COCO segm  AP50, AP75
+  - Word-level Precision, Recall, F1-score  (IoU threshold configurable,
+    default 0.5)
 
-Training summary:
-  - Architecture  : Mask R-CNN + Swin-S backbone
-  - Dataset       : 326 Bengali handwritten answer-book pages (COCO format)
-  - Optimizer     : SGD (momentum=0.9, weight_decay=0.0001)
-  - Iterations    : 5,000
-  - Val set       : 30 annotated images
 
-Expected repository structure:
+    python evaluate.py \\
+        --model       outputs/training/model_final.pth \\
+        --images      /path/to/all/images \\
+        --val_json    outputs/training/splits/val_annotations.json \\
+        --test_json   outputs/training/splits/test_annotations.json \\
+        --output_dir  outputs/evaluation \\
+        --swint_repo  SwinT_detectron2
 
-    bengali-word-segmentation/
-    ├── models/
-    │   └── final_model.pth
-    ├── sample_data/
-    │   ├── images/          ← 30 validation images
-    │   └── annotations/
-    │       └── val_annotations.json
-    ├── scripts/
-    │   └── evaluate.py
-    └── SwinT_detectron2/
-        └── train_net.py
-
-Example usage:
-
-    python evaluate.py \
-        --model   models/final_model.pth \
-        --images  sample_data/images \
-        --annotations sample_data/annotations/val_annotations.json \
-        --output  outputs/evaluation \
-        --swint_repo SwinT_detectron2
+    
 """
 
 import argparse
-import importlib.util
-import io
-import logging
+import importlib
 import os
 import sys
-from contextlib import redirect_stderr, redirect_stdout
 
+import cv2
 import numpy as np
 import torch
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import DatasetCatalog, MetadataCatalog
-from detectron2.data import build_detection_test_loader
 from detectron2.data.datasets import register_coco_instances
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from detectron2.engine import DefaultPredictor
 
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Evaluate Bengali handwritten word segmentation model"
+        description="Evaluate Swin-S Mask R-CNN on val and test sets"
     )
-    parser.add_argument("--model",       default="models/final_model.pth")
-    parser.add_argument("--images",      default="sample_data/images")
-    parser.add_argument("--annotations", default="sample_data/annotations/val_annotations.json")
-    parser.add_argument("--output",      default="outputs/evaluation")
-    parser.add_argument("--swint_repo",  default="SwinT_detectron2")
-    parser.add_argument("--score_thresh", type=float, default=0.5)
+    parser.add_argument("--model",     required=True,
+                        help="Path to trained model weights (.pth)")
+    parser.add_argument("--images",    required=True,
+                        help="Folder containing all images")
+    parser.add_argument("--val_json",  required=True,
+                        help="COCO annotation JSON for the validation set")
+    parser.add_argument("--test_json", required=True,
+                        help="COCO annotation JSON for the test set")
+    parser.add_argument("--swint_repo", default="SwinT_detectron2",
+                        help="Path to SwinT_detectron2 repository")
+    parser.add_argument("--score_threshold", type=float, default=0.5,
+                        help="Minimum prediction confidence score (default: 0.5)")
+    parser.add_argument("--iou_threshold", type=float, default=0.5,
+                        help="IoU threshold for word-level metrics (default: 0.5)")
+    parser.add_argument("--device",
+                        default="cuda" if torch.cuda.is_available() else "cpu",
+                        help="Device: cuda or cpu (default: cuda if available)")
     return parser.parse_args()
 
 
-def silence():
-    return redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO())
+# ---------------------------------------------------------------------------
+# Setup
+# ---------------------------------------------------------------------------
 
-
-def load_train_net(swint_repo):
-    train_net_path = os.path.join(swint_repo, "train_net.py")
-    if not os.path.exists(train_net_path):
+def load_swint_repo(swint_repo):
+    if not os.path.isdir(swint_repo):
         raise FileNotFoundError(
-            f"Could not find train_net.py at: {train_net_path}\n"
-            "Please place/clone the SwinT_detectron2 folder in the repository root."
+            f"SwinT_detectron2 repo not found at: {swint_repo}\n"
+            "Please clone: git clone https://github.com/xiaohu2015/SwinT_detectron2.git"
         )
-    sys.path.insert(0, swint_repo)
-    spec = importlib.util.spec_from_file_location("train_net", train_net_path)
-    train_net = importlib.util.module_from_spec(spec)
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        spec.loader.exec_module(train_net)
-    return train_net
+    if swint_repo not in sys.path:
+        sys.path.insert(0, swint_repo)
+    for mod in ["models", "swint"]:
+        mod_path = os.path.join(swint_repo, mod + ".py")
+        if os.path.exists(mod_path):
+            spec = importlib.util.spec_from_file_location(mod, mod_path)
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
 
 
-def build_config(args, train_net):
-    config_path = os.path.join(
-        args.swint_repo, "configs", "SwinT", "mask_rcnn_swins_S_FPN_3x.yaml"
-    )
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Swin-S config not found at: {config_path}")
-    if not os.path.exists(args.model):
-        raise FileNotFoundError(f"Model weights not found: {args.model}")
-
+def build_cfg(swint_repo, model_path, score_threshold, device):
     cfg = get_cfg()
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        train_net.add_swint_config(cfg)
-    cfg.merge_from_file(config_path)
-
-    cfg.MODEL.SWINT.DEPTHS                    = [2, 2, 18, 2]
-    cfg.MODEL.WEIGHTS                         = args.model
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES           = 1
-    cfg.MODEL.ROI_BOX_HEAD.POOLER_RESOLUTION  = 14
-    cfg.MODEL.ROI_MASK_HEAD.POOLER_RESOLUTION = 14
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST     = 0.5
-    cfg.TEST.DETECTIONS_PER_IMAGE             = 300    # dense Bengali pages
-    cfg.INPUT.MIN_SIZE_TEST                   = 800
-    cfg.INPUT.MAX_SIZE_TEST                   = 1333
-    cfg.DATALOADER.NUM_WORKERS                = 2
-    cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    config_file = os.path.join(
+        swint_repo, "configs", "SwinT", "mask_rcnn_swins_S_FPN_3x.yaml"
+    )
+    if not os.path.exists(config_file):
+        config_file = os.path.join(
+            swint_repo, "configs", "SwinT", "mask_rcnn_swint_T_FPN_3x.yaml"
+        )
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(
+            f"Swin config not found at: {config_file}\n"
+            "Run train.py first — it generates the Swin-S config automatically."
+        )
+    cfg.merge_from_file(config_file)
+    cfg.MODEL.WEIGHTS                     = model_path
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES       = 1
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = score_threshold
+    cfg.MODEL.SWINT.DEPTHS                = (2, 2, 18, 2)
+    cfg.INPUT.MAX_SIZE_TEST               = 1333
+    cfg.INPUT.MIN_SIZE_TEST               = 800
+    cfg.MODEL.DEVICE                      = device
+    cfg.freeze()
     return cfg
 
 
-def register_validation_dataset(dataset_name, annotation_file, image_dir):
-    if dataset_name in DatasetCatalog.list():
-        DatasetCatalog.remove(dataset_name)
-        MetadataCatalog.remove(dataset_name)
-    register_coco_instances(dataset_name, {}, annotation_file, image_dir)
+def register_dataset(name, images_dir, json_path):
+    if name in DatasetCatalog.list():
+        DatasetCatalog.remove(name)
+        MetadataCatalog.remove(name)
+    register_coco_instances(name, {}, json_path, images_dir)
 
 
-def compute_word_detection_metrics(coco_gt, predictions_file, score_thresh=0.5):
-    if not os.path.exists(predictions_file):
-        raise FileNotFoundError(
-            f"Predictions file not found: {predictions_file}\n"
-            "This is generated automatically by COCOEvaluator during inference."
-        )
+# ---------------------------------------------------------------------------
+# Inference
+# ---------------------------------------------------------------------------
 
-    predictions = torch.load(predictions_file, map_location="cpu")
+def run_inference(predictor, coco_gt, images_dir):
+    results = []
+    for img_id in coco_gt.getImgIds():
+        img_info = coco_gt.loadImgs(img_id)[0]
+        fname    = os.path.basename(img_info["file_name"])
+        img_path = os.path.join(images_dir, fname)
 
-    coco_dt_list = []
-    for pred in predictions:
-        for inst in pred["instances"]:
-            x, y, w, h = inst["bbox"]
-            coco_dt_list.append({
-                "image_id":    pred["image_id"],
+        if not os.path.exists(img_path):
+            print(f"  [warn] image not found, skipping: {fname}")
+            continue
+
+        img = cv2.imread(img_path)
+        if img is None:
+            print(f"  [warn] could not read image: {fname}")
+            continue
+
+        outputs   = predictor(img)
+        instances = outputs["instances"].to("cpu")
+
+        if not instances.has("pred_boxes"):
+            continue
+
+        boxes  = instances.pred_boxes.tensor.numpy()
+        scores = instances.scores.numpy()
+        masks  = instances.pred_masks.numpy() if instances.has("pred_masks") else []
+
+        for i in range(len(scores)):
+            x1, y1, x2, y2 = boxes[i]
+            result = {
+                "image_id":    img_id,
                 "category_id": 1,
-                "bbox":        [float(x), float(y), float(w), float(h)],
-                "score":       float(inst["score"])
-            })
+                "bbox":        [float(x1), float(y1),
+                                float(x2 - x1), float(y2 - y1)],
+                "score":       float(scores[i]),
+            }
+            if len(masks) > 0:
+                from pycocotools import mask as mask_util
+                rle = mask_util.encode(
+                    np.asfortranarray(masks[i].astype(np.uint8))
+                )
+                rle["counts"] = rle["counts"].decode("utf-8")
+                result["segmentation"] = rle
+            results.append(result)
 
-    coco_dt = coco_gt.loadRes(coco_dt_list) if coco_dt_list else coco_gt.loadRes([])
+    return results
 
-    coco_eval = COCOeval(coco_gt, coco_dt, "bbox")
-    coco_eval.params.iouThrs = np.array([0.50])
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        coco_eval.evaluate()
-        coco_eval.accumulate()
 
-    tp, fp, fn = 0, 0, 0
-    for eval_img in coco_eval.evalImgs:
-        if eval_img is None:
+# ---------------------------------------------------------------------------
+# COCO metrics  (AP50, AP75 only)
+# ---------------------------------------------------------------------------
+
+def compute_coco_metrics(coco_gt, results):
+    if not results:
+        return {"bbox_AP50": 0.0, "bbox_AP75": 0.0,
+                "segm_AP50": 0.0, "segm_AP75": 0.0}
+
+    coco_dt  = coco_gt.loadRes(results)
+    metrics  = {}
+    has_segm = any("segmentation" in r for r in results)
+
+    for iou_type in ["bbox", "segm"]:
+        if iou_type == "segm" and not has_segm:
+            metrics["segm_AP50"] = 0.0
+            metrics["segm_AP75"] = 0.0
             continue
-        if list(eval_img["aRng"]) != [0, 10000000000.0]:
-            continue
+        ev = COCOeval(coco_gt, coco_dt, iou_type)
+        ev.evaluate()
+        ev.accumulate()
+        ev.summarize()
+        # stats[1] = AP@IoU=0.50,  stats[2] = AP@IoU=0.75
+        metrics[f"{iou_type}_AP50"] = float(ev.stats[1])
+        metrics[f"{iou_type}_AP75"] = float(ev.stats[2])
 
-        dt_scores  = np.array(eval_img["dtScores"])
-        dt_matches = np.array(eval_img["dtMatches"])[0]
-        dt_ignore  = np.array(eval_img["dtIgnore"])[0].astype(bool)
-        gt_ignore  = np.array(eval_img["gtIgnore"]).astype(bool)
-        gt_ids     = eval_img["gtIds"]
+    return metrics
 
-        keep           = dt_scores >= score_thresh
-        kept_matches   = dt_matches[keep]
-        kept_ignore    = dt_ignore[keep]
 
-        tp += int(np.sum((kept_matches > 0) & (~kept_ignore)))
-        fp += int(np.sum((kept_matches == 0) & (~kept_ignore)))
+# ---------------------------------------------------------------------------
+# Word-level Precision / Recall / F1
+# ---------------------------------------------------------------------------
 
-        matched_gt_ids = set(kept_matches[kept_matches > 0].astype(int).tolist())
-        valid_gt_ids   = [int(g) for g, ign in zip(gt_ids, gt_ignore) if not ign]
-        fn += sum(1 for g in valid_gt_ids if g not in matched_gt_ids)
+def _box_iou(a, b):
+    xi = max(a[0], b[0]); yi = max(a[1], b[1])
+    xa = min(a[2], b[2]); ya = min(a[3], b[3])
+    inter = max(0, xa - xi) * max(0, ya - yi)
+    if inter == 0:
+        return 0.0
+    union = (a[2]-a[0])*(a[3]-a[1]) + (b[2]-b[0])*(b[3]-b[1]) - inter
+    return inter / union if union > 0 else 0.0
 
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
-    return precision, recall, f1, tp, fp, fn
+def compute_word_metrics(coco_gt, results, iou_threshold):
+    preds_by_image = {}
+    for r in results:
+        preds_by_image.setdefault(r["image_id"], []).append(r)
+    for img_id in preds_by_image:
+        preds_by_image[img_id].sort(key=lambda x: x["score"], reverse=True)
 
+    total_tp = total_fp = total_fn = 0
+
+    for img_id in coco_gt.getImgIds():
+        anns     = coco_gt.loadAnns(coco_gt.getAnnIds(imgIds=img_id))
+        gt_boxes = [[a["bbox"][0], a["bbox"][1],
+                     a["bbox"][0] + a["bbox"][2],
+                     a["bbox"][1] + a["bbox"][3]] for a in anns]
+        matched  = [False] * len(gt_boxes)
+
+        preds = preds_by_image.get(img_id, [])
+        pred_boxes = [[p["bbox"][0], p["bbox"][1],
+                       p["bbox"][0] + p["bbox"][2],
+                       p["bbox"][1] + p["bbox"][3]] for p in preds]
+
+        tp = fp = 0
+        for pb in pred_boxes:
+            best_iou, best_idx = 0.0, -1
+            for gi, gb in enumerate(gt_boxes):
+                if matched[gi]:
+                    continue
+                iou = _box_iou(pb, gb)
+                if iou > best_iou:
+                    best_iou, best_idx = iou, gi
+            if best_iou >= iou_threshold and best_idx >= 0:
+                tp += 1
+                matched[best_idx] = True
+            else:
+                fp += 1
+
+        total_tp += tp
+        total_fp += fp
+        total_fn += matched.count(False)
+
+    precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0.0
+    recall    = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0.0
+    f1        = (2 * precision * recall / (precision + recall)
+                 if (precision + recall) > 0 else 0.0)
+
+    return round(precision, 4), round(recall, 4), round(f1, 4)
+
+
+# ---------------------------------------------------------------------------
+# Evaluate one split and print results
+# ---------------------------------------------------------------------------
+
+def evaluate_split(split_name, images_dir, json_path,
+                   predictor, iou_threshold):
+
+    coco_gt = COCO(json_path)
+    results = run_inference(predictor, coco_gt, images_dir)
+    coco_m  = compute_coco_metrics(coco_gt, results)
+    precision, recall, f1 = compute_word_metrics(
+        coco_gt, results, iou_threshold
+    )
+
+    print(f"\n{'='*45}")
+    print(f"  {split_name.upper()} SET RESULTS")
+    print(f"{'='*45}")
+    print(f"  BBox  AP50  :  {coco_m['bbox_AP50']:.4f}")
+    print(f"  BBox  AP75  :  {coco_m['bbox_AP75']:.4f}")
+    print(f"  Segm  AP50  :  {coco_m['segm_AP50']:.4f}")
+    print(f"  Segm  AP75  :  {coco_m['segm_AP75']:.4f}")
+    print(f"  {'─'*35}")
+    print(f"  Precision   :  {precision:.4f}")
+    print(f"  Recall      :  {recall:.4f}")
+    print(f"  F1-score    :  {f1:.4f}")
+    print(f"{'='*45}")
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
 def main():
     args = parse_args()
 
-    # Suppress all Detectron2 / library output
-    logging.disable(logging.CRITICAL)
-    os.environ["DETECTRON2_SILENT"] = "1"
-    os.makedirs(args.output, exist_ok=True)
+    for label, path in [
+        ("--model",     args.model),
+        ("--images",    args.images),
+        ("--val_json",  args.val_json),
+        ("--test_json", args.test_json),
+    ]:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"{label} not found: {path}")
 
-    dataset_name = "bengali_word_val_30"
+    load_swint_repo(args.swint_repo)
 
-    train_net = load_train_net(args.swint_repo)
-    register_validation_dataset(dataset_name, args.annotations, args.images)
-    cfg = build_config(args, train_net)
+    print(f"\nLoading model: {args.model}")
+    predictor = DefaultPredictor(
+        build_cfg(args.swint_repo, args.model,
+                  args.score_threshold, args.device)
+    )
+    print("Model loaded.")
 
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        model = train_net.Trainer.build_model(cfg)
-        DetectionCheckpointer(model).load(cfg.MODEL.WEIGHTS)
-        model.eval()
+    evaluate_split("validation", args.images, args.val_json,
+                   predictor, args.iou_threshold)
 
-    evaluator  = COCOEvaluator(dataset_name, output_dir=args.output)
-    val_loader = build_detection_test_loader(cfg, dataset_name)
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        results = inference_on_dataset(model, val_loader, evaluator)
-
-    bbox_ap50 = results["bbox"].get("AP50", 0.0)
-    bbox_ap75 = results["bbox"].get("AP75", 0.0)
-    segm_ap50 = results["segm"].get("AP50", 0.0)
-    segm_ap75 = results["segm"].get("AP75", 0.0)
-
-    coco_gt          = COCO(args.annotations)
-    predictions_file = os.path.join(args.output, "instances_predictions.pth")
-
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        precision, recall, f1, tp, fp, fn = compute_word_detection_metrics(
-            coco_gt=coco_gt,
-            predictions_file=predictions_file,
-            score_thresh=args.score_thresh
-        )
-
-    total_gt       = len(coco_gt.getAnnIds())
-    total_detected = tp + fp
-
-    # ── Print only clean results ───────────────────────────────────────────────
-    print("=" * 60)
-    print("  DATASET SUMMARY")
-    print("=" * 60)
-    print(f"  Validation Images      : {len(coco_gt.getImgIds())}")
-    print(f"  Total Word Annotations : {total_gt}")
-
-    print("\n" + "=" * 60)
-    print("  MODEL PERFORMANCE  (COCO metrics, %)")
-    print("=" * 60)
-    print(f"  {'Metric':<10} {'Bounding Box':>15} {'Segmentation':>15}")
-    print(f"  {'-'*42}")
-    print(f"  {'AP50':<10} {bbox_ap50:>15.2f} {segm_ap50:>15.2f}")
-    print(f"  {'AP75':<10} {bbox_ap75:>15.2f} {segm_ap75:>15.2f}")
-
-    print("\n" + "=" * 60)
-    print(f"  WORD DETECTION METRICS  (IoU >= 0.50, score >= {args.score_thresh})")
-    print("=" * 60)
-    print(f"  {'Precision':<15} {precision * 100:.2f}%")
-    print(f"  {'Recall':<15} {recall * 100:.2f}%")
-    print(f"  {'F1 Score':<15} {f1 * 100:.2f}%")
-
-    print("=" * 60)
+    evaluate_split("test", args.images, args.test_json,
+                   predictor, args.iou_threshold)
 
 
 if __name__ == "__main__":
