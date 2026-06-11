@@ -89,25 +89,15 @@ models/final_model.pth
 
 
 
-## Validation Dataset
+## Dataset
 
-The validation images and COCO annotation file can be downloaded from:
-
-Download Validation Dataset
-
-https://drive.google.com/drive/folders/1yCpxaiwM3vrg5Tl-Ks6tuR0dRnHwxJVM?usp=sharing
-
-Contents:
-Validation images (30 images)
-COCO annotation file (val_annotations.json)
 
 # 🔬 Reproducibility
 
 The repository provides:
 
 - Trained model weights
-- Validation dataset
-- COCO annotations
+- Dataset with annotation
 - Evaluation script
 - Inference visualization script
 
@@ -116,16 +106,6 @@ allowing independent verification of the model.
 ## Training
 
 The training script used in this study is provided for transparency and reproducibility.
-
-The in-house training dataset is not publicly available due to privacy and institutional restrictions, as it contains handwritten student answer-book images collected from multiple Bengali-medium schools. The dataset may be made available for research purposes upon reasonable request to the authors.
-
-Researchers may use their own dataset following the same COCO annotation format. Image annotation tool VGG image annotator.
-python train.py \
-  --train_images /path/to/train/images \
-  --train_json /path/to/train_annotations.json \
-  --val_images /path/to/validation/images \
-  --val_json /path/to/val_annotations.json \
-  --output_dir outputs/training
 
 
 # 📜 License
