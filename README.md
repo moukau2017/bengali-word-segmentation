@@ -55,7 +55,9 @@ Use the provided trained model and sample images to see results immediately. No 
 Download Model
 
 https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing
+
 plae it at:
+
 models/final_model.pth
 
 After download the trained model, use Sample Images in:
@@ -63,11 +65,14 @@ After download the trained model, use Sample Images in:
 sample_input/
 
 Run prediction
+
 python predict.py \
     --model   models/final_model.pth \
     --images  sample_input/
 
-Results are saved to outputs/predictions/ with colour-coded segmentation masks and confidence scores on each word.
+Results are saved to outputs/predictions/ 
+
+with coloured segmentation masks, bounding box and confidence scores on each word.
 
 
 
@@ -85,11 +90,14 @@ data/
 Download and convert pretrained Swin-S backbone weights
 
 # Download original Swin-S ImageNet weights
+
 wget https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_small_patch4_window7_224.pth
 
 # Convert to Detectron2 format
 mkdir -p models
+
 cd SwinT_detectron2
+
 python convert_to_d2.py \
     --source_model ../swin_small_patch4_window7_224.pth \
     --output_model ../models/swin_small_patch4_window7_224_d2.pth
@@ -114,8 +122,6 @@ Print
 
 Visualize predictions on the test set
 
-
-
 Generate segmentation visualizations:
 
 python inference_visualize.py \
@@ -138,12 +144,6 @@ bengali-word-segmentation/
 ├── models/                    ← place model weights here
 │   └── final_model.pth
 └── SwinT_detectron2/          ← cloned separately (see Installation)
-
-
-
-
-
-
 
 
 
