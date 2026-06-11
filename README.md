@@ -59,7 +59,9 @@ plae it at:
 models/final_model.pth
 
 After download the trained model, use Sample Images in:
+
 sample_input/
+
 Run prediction
 python predict.py \
     --model   models/final_model.pth \
