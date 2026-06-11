@@ -161,7 +161,7 @@ bengali-word-segmentation/
 ├── sample_images/             ← sample images for quick testing
 ├── models/                    ← place model weights here
 │   └── final_model.pth
-└── SwinT_detectron2/          ← cloned separately (see Installation)
+└── SwinT_detectron2/          ← cloned separately
 ```
 
 ---
