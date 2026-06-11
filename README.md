@@ -104,29 +104,34 @@ python convert_to_d2.py \
 cd ..
 
 # 🔬 Reproducibility Steps
-Train the model
+#### Step 1 — Train the model
+```bash
 python train.py \
     --images      data/images \
     --json        data/annotations.json \
     --output_dir  outputs/training \
     --swint_repo  SwinT_detectron2 \
     --pretrained_weights models/swin_small_patch4_window7_224_d2.pth
+```
 
-Evaluate the trained model
-Print
+#### Step 2 — Evaluate the trained model
 - AP50
 - AP75
 - Precision
 - Recall
 - F1-score
 
-Visualize predictions on the test set
+#### Step 3 — Visualize predictions on the test set
 
 Generate segmentation visualizations:
 
+```bash
 python inference_visualize.py \
-    --model models/final_model.pth \
-    --images /path/to/validation_images
+    --model       outputs/training/model_final.pth \
+    --images      data/images \
+    --annotations outputs/training/splits/test_annotations.json \
+    --output_dir  outputs/visualizations
+```
 
 The training script used in this study is provided for transparency and reproducibility.
 
