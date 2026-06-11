@@ -132,7 +132,9 @@ The training script used in this study is provided for transparency and reproduc
 
 Prediction visualizations will be saved in:
 outputs/
-"""
+
+
+```
 bengali-word-segmentation/
 ├── predict.py                 ← quick prediction on any images
 ├── train.py                   ← training with auto dataset split
@@ -144,8 +146,9 @@ bengali-word-segmentation/
 ├── models/                    ← place model weights here
 │   └── final_model.pth
 └── SwinT_detectron2/          ← cloned separately (see Installation)
+```
 
-"""
+---
 
 # 📜 License
 
