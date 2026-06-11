@@ -94,8 +94,8 @@ Dataset link:
 Place files as:
 ```
 data/
-├── images/           ← all 435 images
-└── annotations.json  ← single COCO-format annotation file
+├── images/           ← all images
+└── annotations.json  ← annotation file
 ```
 
 Download and convert pretrained Swin-S backbone weights
