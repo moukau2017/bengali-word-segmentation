@@ -1,14 +1,8 @@
+# Install PyTorch first
+# Install Detectron2 next
+
 torch
 numpy
-# Computer Vision
 opencv-python
 Pillow
-matplotlib
-# Detectron2 dependencies
-cython
-fvcore
 iopath
-pycocotools
-timm
-# Detectron2 — install separately
-# pip install git+https://github.com/facebookresearch/detectron2.git
