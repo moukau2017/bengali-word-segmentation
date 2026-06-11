@@ -32,23 +32,17 @@ https://github.com/moukau2017/bengali-word-segmentation
 - PyTorch
 - Detectron2
 
+### Clone SwinT_detectron2
+git clone https://github.com/xiaohu2015/SwinT_detectron2.git
 
-## 📁 Project Structure
+### Clone SwinT_detectron2
+git clone https://github.com/xiaohu2015/SwinT_detectron2.git
 
-bengali-word-segmentation/
-│
-├── models/
-│   └── .gitkeep
-│
-├── outputs/
-│   └── example_predictions/
-│
-├── evaluate.py
-├── inference_visualize.py
-├── requirements.txt
-├── README.md
-└── LICENSE
+### Install dependencies
+pip install -r requirements.txt
 
+### Download pretrained Swin-S weights
+Download the Detectron2-converted Swin-S weights and place them at models/swin_small_patch4_window7_224_d2.pth:
 
 
 # 🖼 Inference & Visualization
