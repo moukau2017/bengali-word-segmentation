@@ -33,42 +33,51 @@ https://github.com/moukau2017/bengali-word-segmentation
 - Detectron2
   
 ### Clone SwinT_detectron2
-git clone https://github.com/xiaohu2015/SwinT_detectron2.git
+```bash
+git clone https://github.com/moukau2017/bengali-word-segmentation.git
+cd bengali-word-segmentation
+```
 
 ### Clone SwinT_detectron2
+```bash
 git clone https://github.com/xiaohu2015/SwinT_detectron2.git
+```
 
 ### Install dependencies
+```bash
 pip install -r requirements.txt
-
-### Download pretrained Swin-S weights
-Download the Detectron2-converted Swin-S weights and place them at models/swin_small_patch4_window7_224_d2.pth:
+```
 
 
-
-## Part A -- Quick prediction with trained model Model
+## Part A -- Quick prediction with trained model
 
 Our trained model weights can be downloaded from Google Drive: Quick Prediction on Sample Images
 
 Use the provided trained model and sample images to see results immediately. No training required.
 
-Download Model
+**1. Download the traine model
 
-https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing
+📥 **[Download Model (Google Drive)](https://drive.google.com/file/d/1HKPQ8I7f7mZpVFkVkZtFhCyQ-7CdA4Vj/view?usp=sharing)**
 
-plae it at:
-
+Place it at:
+```
 models/final_model.pth
+```
 
-After download the trained model, use Sample Images in:
+After download the trained model, 
 
+use Sample Images in:
+```
 sample_input/
+```
 
-Run prediction
+**2. Run prediction
 
+```bash
 python predict.py \
     --model   models/final_model.pth \
-    --images  sample_input/
+    --images  sample_images/
+```
 
 Results are saved to outputs/predictions/ 
 
