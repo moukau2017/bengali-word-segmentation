@@ -34,8 +34,6 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
 from detectron2.config import get_cfg
-from detectron2.data import DatasetCatalog, MetadataCatalog
-from detectron2.data.datasets import register_coco_instances
 from detectron2.engine import DefaultPredictor
 
 
@@ -111,13 +109,6 @@ def build_cfg(swint_repo, model_path, score_threshold, device):
     cfg.MODEL.DEVICE                      = device
     cfg.freeze()
     return cfg
-
-
-def register_dataset(name, images_dir, json_path):
-    if name in DatasetCatalog.list():
-        DatasetCatalog.remove(name)
-        MetadataCatalog.remove(name)
-    register_coco_instances(name, {}, json_path, images_dir)
 
 
 # ---------------------------------------------------------------------------
