@@ -1,14 +1,14 @@
 """
-demo.py
 
-Run the trained Bengali word segmentation model on sample images and
-save visualized predictions to an output folder.
+Download the trained model from link in READme file. Run the trained word segmentation model on sample images (provided in Sample_input folder)
 
-This is the quickest way to verify the model works on your machine.
-No annotations or dataset splits are needed — just the model and images.
+then save visualized predictions to an output folder.
+
+This is the quickest way to verify the model works on any machine.
+No training require for testing our trained model - just the model and images.
 
 Each output image shows:
-  - Colour-coded instance segmentation masks (one colour per word)
+  - Segmentation color mask
   - Bounding boxes with confidence scores
 
 Outputs are saved to:
