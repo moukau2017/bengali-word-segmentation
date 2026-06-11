@@ -92,25 +92,26 @@ Download the dataset first:
 Dataset link: 
 
 Place files as:
+```
 data/
-├── images/           ← all images
+├── images/           ← all 435 images
 └── annotations.json  ← single COCO-format annotation file
+```
 
 Download and convert pretrained Swin-S backbone weights
 
+```bash
 # Download original Swin-S ImageNet weights
-
 wget https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_small_patch4_window7_224.pth
 
 # Convert to Detectron2 format
 mkdir -p models
-
 cd SwinT_detectron2
-
 python convert_to_d2.py \
     --source_model ../swin_small_patch4_window7_224.pth \
     --output_model ../models/swin_small_patch4_window7_224_d2.pth
 cd ..
+```
 
 # 🔬 Reproducibility Steps
 #### Step 1 — Train the model
@@ -124,6 +125,7 @@ python train.py \
 ```
 
 #### Step 2 — Evaluate the trained model
+use evaluate.py/
 - AP50
 - AP75
 - Precision
