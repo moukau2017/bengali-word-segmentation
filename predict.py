@@ -19,7 +19,7 @@ Example usage:
 
     python demo.py \\
         --model   models/final_model.pth \\
-        --images  sample_images/ \\
+        --images  sample_input/ \\
         --swint_repo SwinT_detectron2
 
     # Optionally change output folder or score threshold:
@@ -27,34 +27,7 @@ Example usage:
         --score_threshold 0.5
 """
 
-"""
-predict.py
 
-Run the trained Bengali word segmentation model on sample images and
-save visualized predictions to an output folder.
-
-This is the quickest way to verify the model works on your machine.
-No annotations or dataset splits are needed — just the model and images.
-
-Each output image shows:
-  - Colour-coded instance segmentation masks (one colour per word)
-  - Bounding boxes with confidence scores
-
-Outputs are saved to:
-  outputs/predictions/
-    <image_name>_pred.jpg   (one per input image)
-
-Example usage:
-
-    python predict.py \\
-        --model   models/final_model.pth \\
-        --images  sample_images/ \\
-        --swint_repo SwinT_detectron2
-
-    # Optionally change output folder or score threshold:
-        --output_dir  outputs/predictions
-        --score_threshold 0.5
-"""
 
 import argparse
 import importlib
