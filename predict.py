@@ -87,7 +87,7 @@ SUPPORTED_EXT = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 
 
 def load_swint_repo(swint_repo):
-    """Add SwinT_detectron2 to sys.path to register the Swin backbone."""
+    """Add SwinT_detectron2 to sys.path and register the Swin backbone with detectron2."""
     if not os.path.isdir(swint_repo):
         raise FileNotFoundError(
             f"SwinT_detectron2 repo not found at: {swint_repo}\n"
@@ -96,12 +96,24 @@ def load_swint_repo(swint_repo):
         )
     if swint_repo not in sys.path:
         sys.path.insert(0, swint_repo)
-    for mod in ["models", "swint"]:
-        mod_path = os.path.join(swint_repo, mod + ".py")
-        if os.path.exists(mod_path):
-            spec = importlib.util.spec_from_file_location(mod, mod_path)
-            m = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(m)
+
+    # swint is a package (swint/__init__.py), not a flat .py file.
+    # Must be imported explicitly so it registers the backbone with detectron2.
+    # Without this, DefaultPredictor crashes with KeyError: 'SwinT'
+    swint_init = os.path.join(swint_repo, "swint", "__init__.py")
+    if not os.path.exists(swint_init):
+        raise FileNotFoundError(
+            f"swint package not found at: {swint_init}\n"
+            "Make sure SwinT_detectron2 is properly cloned."
+        )
+    spec = importlib.util.spec_from_file_location(
+        "swint", swint_init,
+        submodule_search_locations=[os.path.join(swint_repo, "swint")]
+    )
+    swint_mod = importlib.util.module_from_spec(spec)
+    sys.modules["swint"] = swint_mod
+    spec.loader.exec_module(swint_mod)
+    print(f"[setup] swint backbone registered from: {swint_repo}")
 
 
 def build_cfg(swint_repo, model_path, score_threshold, device):
