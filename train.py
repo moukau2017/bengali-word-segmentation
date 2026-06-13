@@ -116,11 +116,7 @@ def filter_valid_images(coco_json_path, images_dir):
     coco["images"]      = valid_images
     coco["annotations"] = valid_anns
  
-    print(f"\n[filter] Total images in JSON        : {len(all_images)}")
     print(f"[filter] Valid (file + annotation)   : {len(valid_images)}")
-    print(f"[filter] Skipped — file missing      : {len(skipped_missing)}")
-    print(f"[filter] Skipped — no annotation     : {len(skipped_no_ann)}")
-    print(f"[filter] Annotations kept            : {len(valid_anns)}\n")
  
     filtered_path = coco_json_path.replace(".json", "_filtered.json")
     with open(filtered_path, "w") as f:
